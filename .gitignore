@@ -69,3 +69,5 @@ firebase-adminsdk*.json
 # =========================
 .cache/
 tmp/
+# Runtime temporary files
+backend/services/agent/temp/
