@@ -52,15 +52,29 @@ export const verifyPayment = async (req,res) => {
     return res.status(400).json({message:"Payment Verification Failed"})
  }
 
- const payment=await Payment.findOne({orderId:razorpay_order_id})
+const userId = req.headers["x-user-id"]
 
- if(!payment){
-    return res.status(404).json({message:"Payment Not Found"})
- }
+if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" })
+}
 
- payment.status="paid"
- payment.paymentId=razorpay_payment_id
- await payment.save()
+const payment = await Payment.findOne({
+    orderId: razorpay_order_id,
+    userId,
+    status: "created"
+})
+
+if (!payment) {
+    return res.status(404).json({
+        message: "Payment not found or already processed"
+    })
+}
+
+payment.status = "paid"
+payment.paymentId = razorpay_payment_id
+await payment.save()
+
+
  const { data } = await axios.post(
     `${process.env.AUTH_SERVICE}/update-plan`,
     {
